@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- config.xml reference: https://build.phonegap.com/docs/config-xml -->
+<widget xmlns     = "http://www.w3.org/ns/widgets"
+        id        = "com.phonegap.helloworld"
+        version   = "1.0.0">
+
+<name>SAC</name>
+<description>
+  Sistema de Asesoria Comercial
+</description>
+
+<author href="http://www.soyoda.com" email="sistemas@soyodaecuador.com">
+  Desarrollo Soyoda
+</author>
+
+<plugin name="Storage" value="org.apache.cordova.Storage" />
+
+</widget>
