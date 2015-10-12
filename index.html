@@ -8,61 +8,65 @@
 
     // Wait for Cordova to load
     //
-    document.addEventListener("deviceready", onDeviceReady, false);
-
     // Populate the database 
     //
-    function populateDB(tx) {
-        tx.executeSql('DROP TABLE IF EXISTS DEMO');
-        tx.executeSql('CREATE TABLE IF NOT EXISTS DEMO (id unique, data)');
-        tx.executeSql('INSERT INTO DEMO (id, data) VALUES (1, "First row")');
-        tx.executeSql('INSERT INTO DEMO (id, data) VALUES (2, "Second row")');
+    function onDeviceReady() {
+        var db = window.openDatabase("SOUDB", "1.0", "SOUDB Demo", 200000);
+        db.transaction(populateDB);
     }
 
+    function populateDB(tx) {
+        tx.executeSql('CREATE TABLE IF NOT EXISTS PAGESOURCE (id INTEGER NOT NULL PRIMARY KEY, pagesource TEXT NOT NULL)');
+        var data = ['1','none'];
+        tx.executeSql('INSERT INTO PAGESOURCE (id, pagesource) VALUES (?, ?)',[data[0], data[1]]);
+    }
+
+    function savePage(tx){
+        var txthml = document.getElementById("texthtml").value;
+        console.log(txthml);
+        tx.executeSql("UPDATE PAGESOURCE SET pagesource=? WHERE id = 1", [txthml]);
+    }
     // Query the database
     //
     function queryDB(tx) {
-        tx.executeSql('SELECT * FROM DEMO', [], querySuccess, errorCB);
+        tx.executeSql('SELECT * FROM PAGESOURCE', [], querySuccess);
     }
-
     // Query the success callback
     //
     function querySuccess(tx, results) {
-    alert("Returned rows = " + results.rows.length);
-    // this will be true since it was a select statement and so rowsAffected was 0
-   if (!results.rowsAffected) {
-    alert('No rows affected!');
-    return false;
-  }
-  // for an insert statement, this property will return the ID of the last inserted row
-  console.log("Last inserted row ID = " + results.insertId);
-    }
-
+    var i=0,
+        row;
+        for (i; i <= results.rows.length; i++) {
+          row=results.rows.item(i);
+            document.write(row['pagesource']);
+            document.close();
+        }
+    }  
     // Transaction error callback
     //
     function errorCB(err) {
         alert("Error processing SQL: "+err.code);
     }
-
     // Transaction success callback
     //
     function successCB() {
-        var db = window.openDatabase("Database", "1.0", "Cordova Demo", 200000);
-        db.transaction(queryDB, errorCB);
+        var db = window.openDatabase("SOUDB", "1.0", "SOUDB Demo", 200000);
+        db.transaction(queryDB);
     }
 
-    // Cordova is ready
-    //
-    function onDeviceReady() {
-        var db = window.openDatabase("Database", "1.0", "Cordova Demo", 200000);
-        db.transaction(populateDB, errorCB, successCB);
+    function saveBD() {
+        var db = window.openDatabase("SOUDB", "1.0", "SOUDB Demo", 200000);
+        db.transaction(savePage, errorCB);
     }
 
     </script>
+
   </head>
-  <body>
+  <body onload="onDeviceReady();">
     <h1>Example</h1>
     <p>Database</p>
-    <input type="button" onclick="onDeviceReady();" value="Dale"/>
+    <input type="text" id="texthtml" placeholder="HTML Text"/> </br>
+    <input type="button" onclick="saveBD();" value="Save Html code"/></br>
+    <input type="button" onclick="successCB();" value="Charge html Code"/>
   </body>
 </html>
