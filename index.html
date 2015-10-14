@@ -1,72 +1,59 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Storage Example</title>
+<head>
+ 
+<script type="text/javascript" language="javascript">
+ 
+var READY_STATE_UNINITIALIZED=0; 
+var READY_STATE_LOADING=1; 
+var READY_STATE_LOADED=2;
+var READY_STATE_INTERACTIVE=3; 
+var READY_STATE_COMPLETE=4;
+ 
+var peticion_http;
+var filename;
 
-    <script type="text/javascript" charset="utf-8" src="cordova-2.2.0.js"></script>
-    <script type="text/javascript" charset="utf-8">
-
-    // Wait for Cordova to load
-    //
-    // Populate the database 
-    //
-    function onDeviceReady() {
-        var db = window.openDatabase("SOUDB", "1.0", "SOUDB Demo", 200000);
-        db.transaction(populateDB);
+function cargaContenido(url, metodo, funcion) {
+  peticion_http = inicializa_xhr();
+  filename = url.substring(url.lastIndexOf('/')+1);
+  if(peticion_http) {
+    peticion_http.onreadystatechange = funcion;
+    peticion_http.open(metodo, url, true);
+    peticion_http.responseType = 'blob';
+    peticion_http.send(null);
+  }
+}
+ 
+function inicializa_xhr() {
+  if(window.XMLHttpRequest) {
+    return new XMLHttpRequest();
+  }
+  else if(window.ActiveXObject) {
+    return new ActiveXObject("Microsoft.XMLHTTP");
+  }
+}
+ 
+function muestraContenido() {
+  if(peticion_http.readyState == READY_STATE_COMPLETE) {
+    if(peticion_http.status == 200) {
+      var link = document.createElement("a");
+	  link.download = filename;
+	  link.href = window.URL.createObjectURL(peticion_http.response);
+	  link.click();
     }
-
-    function populateDB(tx) {
-        tx.executeSql('CREATE TABLE IF NOT EXISTS PAGESOURCE (id INTEGER NOT NULL PRIMARY KEY, pagesource TEXT NOT NULL)');
-        var data = ['1','none'];
-        tx.executeSql('INSERT INTO PAGESOURCE (id, pagesource) VALUES (?, ?)',[data[0], data[1]]);
-    }
-
-    function savePage(tx){
-        var txthml = document.getElementById("texthtml").value;
-        console.log(txthml);
-        tx.executeSql("UPDATE PAGESOURCE SET pagesource=? WHERE id = 1", [txthml]);
-    }
-    // Query the database
-    //
-    function queryDB(tx) {
-        tx.executeSql('SELECT * FROM PAGESOURCE', [], querySuccess);
-    }
-    // Query the success callback
-    //
-    function querySuccess(tx, results) {
-    var i=0,
-        row;
-        for (i; i <= results.rows.length; i++) {
-          row=results.rows.item(i);
-            document.write(row['pagesource']);
-            document.close();
-        }
-    }  
-    // Transaction error callback
-    //
-    function errorCB(err) {
-        alert("Error processing SQL: "+err.code);
-    }
-    // Transaction success callback
-    //
-    function successCB() {
-        var db = window.openDatabase("SOUDB", "1.0", "SOUDB Demo", 200000);
-        db.transaction(queryDB);
-    }
-
-    function saveBD() {
-        var db = window.openDatabase("SOUDB", "1.0", "SOUDB Demo", 200000);
-        db.transaction(savePage, errorCB);
-    }
-
-    </script>
-
-  </head>
-  <body onload="onDeviceReady();">
-    <h1>Example</h1>
-    <p>Database</p>
-    <input type="text" id="texthtml" placeholder="HTML Text"/> </br>
-    <input type="button" onclick="saveBD();" value="Save Html code"/></br>
-    <input type="button" onclick="successCB();" value="Charge html Code"/>
-  </body>
+  }
+}
+ 
+function descargaArchivo() {
+  cargaContenido('http://www.codeproject.com/KB/aspnet/339162/AndroidPushNotification.zip', "GET", muestraContenido);
+}
+ 
+ 
+</script>
+ 
+</head>
+<body>
+		<input type="text" id="texthtml" placeholder="HTML Text"/> </br>
+       	<input type="button" onclick="descargaArchivo();" value="download"/>
+</body>
 </html>
